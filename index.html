@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>IA Privada - Petrobras</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-image: url("/fundo.png");
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      .chat-card {
+        width: 100%;
+        max-width: 550px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* O seu cabeçalho verde Petrobras */
+      .header {
+        background: #008542;
+        color: white;
+        padding: 15px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 1.1em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+      .header img {
+        height: 25px;
+      } /* Ajuste a altura da logo aqui */
+
+      #chatbox {
+        height: 400px;
+        overflow-y: auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        background: #f8f9fa;
+      }
+      .msg {
+        padding: 12px 16px;
+        border-radius: 8px;
+        max-width: 85%;
+        font-size: 0.95em;
+        line-height: 1.4;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      }
+      .user {
+        align-self: flex-end;
+        background: #008542;
+        color: white;
+        border-bottom-right-radius: 0;
+      }
+      .bot {
+        align-self: flex-start;
+        background: #e4e6eb;
+        color: #050505;
+        border-bottom-left-radius: 0;
+      }
+
+      .input-area {
+        display: flex;
+        padding: 15px;
+        background: white;
+        border-top: 1px solid #ddd;
+        gap: 10px;
+      }
+      input {
+        flex: 1;
+        padding: 12px 15px;
+        border: 1px solid #ccc;
+        border-radius: 20px;
+        outline: none;
+        font-size: 0.95em;
+      }
+      /* O seu botão amarelo */
+      button {
+        background: #ffcc00;
+        border: none;
+        padding: 10px 25px;
+        border-radius: 20px;
+        font-weight: bold;
+        cursor: pointer;
+        color: #333;
+        transition: 0.2s;
+      }
+      button:hover {
+        background: #e6b800;
+        transform: scale(1.05);
+      }
+    </style>
+    <link rel="icon" href="logo.png" type="image/png" />
+  </head>
+  <body>
+    <div class="chat-card">
+      <div class="header">
+        <img src="logo.png" alt="BR" />
+        <span>ASSISTENTE TÉCNICO LOCAL</span>
+      </div>
+      <div id="chatbox">
+        <div class="msg bot">
+          Olá! Sou sua IA privada. Como posso ajudar com os documentos da
+          Petrobras hoje?
+        </div>
+      </div>
+      <div class="input-area">
+        <input
+          type="text"
+          id="pergunta"
+          placeholder="Digite sua dúvida técnica..."
+          onkeypress="if (event.key === 'Enter') enviar();"
+        />
+        <button onclick="enviar()">Enviar</button>
+      </div>
+    </div>
+
+    <script>
+      async function enviar() {
+        const input = document.getElementById("pergunta");
+        const chatbox = document.getElementById("chatbox");
+        const texto = input.value.trim();
+        if (!texto) return;
+
+        // 1. Mostra a pergunta do usuário na tela
+        chatbox.innerHTML += `<div class="msg user">${texto}</div>`;
+        input.value = "";
+        chatbox.scrollTop = chatbox.scrollHeight;
+
+        // 2. Mostra que a IA está pensando
+        const tempId = "id" + Date.now();
+        chatbox.innerHTML += `<div class="msg bot" id="${tempId}">Analizando🧐</div>`;
+        chatbox.scrollTop = chatbox.scrollHeight;
+
+        try {
+          // 3. ENVIA A PERGUNTA PARA O SEU SERVIDOR NODE.JS (index.js)
+          const res = await fetch("/perguntar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ pergunta: texto }),
+          });
+          const dados = await res.json();
+
+          // 4. Mostra a resposta real na tela
+          document.getElementById(tempId).innerText = dados.resposta;
+        } catch (e) {
+          document.getElementById(tempId).innerText =
+            "Erro ao conectar com o servidor local.";
+        }
+        chatbox.scrollTop = chatbox.scrollHeight;
+      }
+    </script>
+  </body>
+</html>
